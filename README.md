@@ -55,27 +55,27 @@ codex-cleaner --path ./sua-pasta-de-codigo
 
 
 ## 💡 Exemplos de Uso
-# 1. Uso básico:
+### 1. Uso básico:
 
 ```bash
 # A pasta base onde seu código ts esta
 codex-cleaner -p ./src
 ```
 
-# 2. Filtrar arquivos e remover itens específicos:
+### 2. Filtrar arquivos e remover itens específicos:
 Se você quer apenas os arquivos que têm "service" no nome, mas quer ignorar o auth.service.ts:
 
 ```bash
 codex-cleaner -p ./src -f service -r auth.service.ts
 ```
 
-# 3. Ignorar múltiplos arquivos:
+### 3. Ignorar múltiplos arquivos:
 
 ```bash
 codex-cleaner -p ./src -r config.ts -r database.ts -r constants.ts#
 ```
 
-# 4. 📂 Alterar Arquivo de Saída
+### 4. 📂 Alterar Arquivo de Saída
 Por padrão, o script gera arquivos numerados como projeto_completo_1.txt, projeto_completo_2.txt, etc. Para mudar esse nome base, use a flag -o:
 
 ```bash
@@ -85,12 +85,12 @@ codex-cleaner -p ./src -o contexto_ia.txt
 
 Isso resultará em: contexto_ia_1.txt, contexto_ia_2.txt, etc.
 
-## 📋 Requisitos
+### 📋 Requisitos
 Node.js: Versão v18.3.0 ou superior.
 Motivo: O script utiliza o módulo nativo node:util/parseArgs, eliminando a necessidade de instalar bibliotecas externas para gerenciar argumentos de linha de comando.
 
-## 📄 Licença
+### 📄 Licença
 Este projeto está sob a licença MIT.
 
-## 📄 Licença
+### 📄 Licença
 Este projeto está sob a licença MIT.
