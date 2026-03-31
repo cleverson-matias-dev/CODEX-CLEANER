@@ -23,13 +23,14 @@ A resposta é dividida  em múltiplos arquivos se o limite de 6.000 caracteres f
 
 Você pode usar a ferramenta via npx (sem instalação) ou instalá-la globalmente:
 
+npx
 ```bash
 # Via npx
 npx codex-cleaner -p ./src
 ```
 
 
-# Instalação Global
+Instalação Global
 ```bash
 npm install -g codex-cleaner
 ```
