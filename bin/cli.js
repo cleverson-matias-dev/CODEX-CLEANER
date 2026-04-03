@@ -4,21 +4,16 @@ const fs = require('fs');
 const path = require('path');
 const { parseArgs } = require('node:util');
 
-// Configuração dos argumentos de linha de comando (CLI)
 const options = {
-  path: { type: 'string', short: 'p' }, // Caminho do diretório alvo
-  output: { type: 'string', short: 'o', default: 'projeto_completo.txt' }, // Nome do arquivo de saída
-  filter: { type: 'string', short: 'f' }, // Filtro para nomes de arquivos específicos
-  remove: { type: 'string', short: 'r', multiple: true }, // Lista de arquivos para ignorar
+  path: { type: 'string', short: 'p' },
+  output: { type: 'string', short: 'o', default: 'projeto_completo.txt' },
+  filter: { type: 'string', short: 'f', multiple: true }, 
+  remove: { type: 'string', short: 'r', multiple: true },
 };
 
-/**
- * Limpa o código para reduzir o consumo de tokens.
- * Remove comentários, imports, exports de tipos e minifica o texto.
- */
 function limparConteudo(conteudo) {
   return conteudo
-    .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '') // Remove comentários /* */ e //
+    .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
     .split('\n')
     .map(linha => linha.trim())
     .filter(linha => (
@@ -27,8 +22,8 @@ function limparConteudo(conteudo) {
       !linha.startsWith('export {') &&
       !linha.startsWith('type ')
     ))
-    .join(' ') // Transforma o código em uma linha contínua por arquivo
-    .replace(/\s+/g, ' '); // Remove espaços múltiplos
+    .join(' ')
+    .replace(/\s+/g, ' ');
 }
 
 try {
@@ -40,34 +35,24 @@ try {
   }
 
   const pastaRaiz = path.resolve(values.path);
-  const termoFiltro = values.filter?.toLowerCase();
+  const filtros = values.filter?.map(f => f.toLowerCase());
   const nomesParaRemover = values.remove || [];
-  const LIMIT_CHAR = 6000; // Limite de caracteres por arquivo de saída
+  const LIMIT_CHAR = 6000;
   
   let conteudoAcumulado = '';
   let contadorArquivosSaida = 1;
-  const arquivosProcessadosNomes = [];
+  const arquivosProcessadosNomes = []; // Lista para o log final
 
-  /**
-   * Salva o conteúdo acumulado em um arquivo físico e reseta o buffer.
-   */
   function salvarArquivo() {
     if (conteudoAcumulado.trim().length === 0) return;
-
     const parsedPath = path.parse(values.output);
-    // Adiciona sufixo numérico (ex: projeto_1.txt, projeto_2.txt)
     const nomeComSufixo = `${parsedPath.name}_${contadorArquivosSaida}${parsedPath.ext}`;
-    
     fs.writeFileSync(nomeComSufixo, conteudoAcumulado.trim());
-    console.log(`✅ Parte ${contadorArquivosSaida} salva: ${nomeComSufixo} (${conteudoAcumulado.length} chars)`);
-    
+    console.log(`📦 Parte ${contadorArquivosSaida} gerada: ${nomeComSufixo}`);
     conteudoAcumulado = '';
     contadorArquivosSaida++;
   }
 
-  /**
-   * Função recursiva que navega pelas pastas buscando arquivos .ts
-   */
   function varrerDiretorio(diretorio) {
     const itens = fs.readdirSync(diretorio);
 
@@ -76,45 +61,47 @@ try {
       const stats = fs.statSync(caminhoAbsoluto);
 
       if (stats.isDirectory()) {
-        // Ignora pastas comuns de dependências e build
         if (['node_modules', 'dist', '.git', '.next', 'coverage'].includes(item)) continue;
         varrerDiretorio(caminhoAbsoluto);
       } else {
-        // Regras: Deve ser .ts, não pode ser teste, deve passar no filtro e não estar na lista de remoção
         const ehTsValido = item.endsWith('.ts') && !item.endsWith('.spec.ts') && !item.endsWith('.test.ts');
-        const passaFiltro = !termoFiltro || item.toLowerCase().includes(termoFiltro);
+        const passaFiltro = !filtros || filtros.length === 0 || filtros.some(f => item.toLowerCase().includes(f));
         const ehRemovido = nomesParaRemover.includes(item);
 
         if (ehTsValido && passaFiltro && !ehRemovido) {
           const relativo = path.relative(pastaRaiz, caminhoAbsoluto);
           const raw = fs.readFileSync(caminhoAbsoluto, 'utf8');
-          
           const limpo = `${limparConteudo(raw)}\n`;
 
-          // Se o novo conteúdo exceder o limite, salva o que já temos e começa um novo arquivo
           if (conteudoAcumulado.length + limpo.length > LIMIT_CHAR && conteudoAcumulado.length > 0) {
             salvarArquivo();
           }
 
           conteudoAcumulado += limpo;
+          // Adiciona o caminho relativo à lista de sucesso
           arquivosProcessadosNomes.push(relativo);
         }
       }
     }
   }
 
-  console.log(`🔍 Iniciando leitura em: ${pastaRaiz}\n`);
+  console.log(`🔍 Vasculhando: ${pastaRaiz}`);
+  if (filtros) console.log(`🎯 Filtros aplicados: ${filtros.join(', ')}\n`);
+  
   varrerDiretorio(pastaRaiz);
-  salvarArquivo(); // Salva o restante do conteúdo no final
+  salvarArquivo();
 
-  // Resumo da execução
+  // EXIBIÇÃO DA LISTA E QUANTIDADE
+  console.log('\n======================================');
   if (arquivosProcessadosNomes.length > 0) {
-    console.log('\n📄 Arquivos processados:');
-    arquivosProcessadosNomes.forEach(arq => console.log(`  - ${arq}`));
-    console.log(`\nTotal: ${arquivosProcessadosNomes.length} arquivo(s).`);
+    console.log(`✅ SUCESSO: ${arquivosProcessadosNomes.length} arquivo(s) processados:`);
+    arquivosProcessadosNomes.forEach((arq, index) => {
+      console.log(`${(index + 1).toString().padStart(3, ' ')}. ${arq}`);
+    });
   } else {
-    console.log("⚠️ Nenhum arquivo compatível encontrado.");
+    console.log("⚠️ Nenhum arquivo encontrado com os critérios informados.");
   }
+  console.log('======================================\n');
 
 } catch (err) {
   console.error("💥 Erro:", err.message);
