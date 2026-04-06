@@ -50,8 +50,8 @@ codex-cleaner --path ./sua-pasta-de-codigo
 | :--- | :--- | :--- | :--- | :--- |
 | `--path` | `-p` | `string` | (Obrigatório) Caminho do diretório para leitura. | |
 | `--output` | `-o` | `string` | Nome base do arquivo de saída. | `projeto_completo.txt` |
-| `--filter` | `-f` | `string` | Processa apenas arquivos que contenham este termo no nome. | |
-| `--remove` | `-r` | `array` | Ignora arquivos específicos (pode ser usado múltiplas vezes). | `[]` |
+| `--filter` | `-f` | `string` | Processa apenas arquivos que contenham este termo no nome. (pode ser usado múltiplas vezes). | [] |
+| `--remove` | `-r` | `array` | Ignora arquivos que contenham o termo no nome (pode ser usado múltiplas vezes). | `[]` |
 
 
 ## 💡 Exemplos de Uso
@@ -66,7 +66,7 @@ codex-cleaner -p ./src
 Se você quer apenas os arquivos que têm "service" no nome, mas quer ignorar o auth.service.ts:
 
 ```bash
-codex-cleaner -p ./src -f service -r auth.service.ts
+codex-cleaner -p ./src -f service -r auth
 ```
 
 ### 3. Ignorar múltiplos arquivos:
