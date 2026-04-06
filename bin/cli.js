@@ -36,12 +36,13 @@ try {
 
   const pastaRaiz = path.resolve(values.path);
   const filtros = values.filter?.map(f => f.toLowerCase());
-  const nomesParaRemover = values.remove || [];
+  // Normalizamos os termos de remoção para lowercase uma única vez
+  const termosParaRemover = values.remove?.map(r => r.toLowerCase()) || [];
   const LIMIT_CHAR = 6000;
   
   let conteudoAcumulado = '';
   let contadorArquivosSaida = 1;
-  const arquivosProcessadosNomes = []; // Lista para o log final
+  const arquivosProcessadosNomes = [];
 
   function salvarArquivo() {
     if (conteudoAcumulado.trim().length === 0) return;
@@ -64,9 +65,13 @@ try {
         if (['node_modules', 'dist', '.git', '.next', 'coverage'].includes(item)) continue;
         varrerDiretorio(caminhoAbsoluto);
       } else {
+        const itemLower = item.toLowerCase();
         const ehTsValido = item.endsWith('.ts') && !item.endsWith('.spec.ts') && !item.endsWith('.test.ts');
-        const passaFiltro = !filtros || filtros.length === 0 || filtros.some(f => item.toLowerCase().includes(f));
-        const ehRemovido = nomesParaRemover.includes(item);
+        
+        const passaFiltro = !filtros || filtros.length === 0 || filtros.some(f => itemLower.includes(f));
+        
+        // NOVO FILTRO -R: Verifica se o nome do arquivo contém algum dos termos (case insensitive)
+        const ehRemovido = termosParaRemover.some(termo => itemLower.includes(termo));
 
         if (ehTsValido && passaFiltro && !ehRemovido) {
           const relativo = path.relative(pastaRaiz, caminhoAbsoluto);
@@ -78,7 +83,6 @@ try {
           }
 
           conteudoAcumulado += limpo;
-          // Adiciona o caminho relativo à lista de sucesso
           arquivosProcessadosNomes.push(relativo);
         }
       }
@@ -86,12 +90,12 @@ try {
   }
 
   console.log(`🔍 Vasculhando: ${pastaRaiz}`);
-  if (filtros) console.log(`🎯 Filtros aplicados: ${filtros.join(', ')}\n`);
+  if (filtros) console.log(`🎯 Filtros aplicados: ${filtros.join(', ')}`);
+  if (termosParaRemover.length > 0) console.log(`🚫 Removendo arquivos que contenham: ${termosParaRemover.join(', ')}\n`);
   
   varrerDiretorio(pastaRaiz);
   salvarArquivo();
 
-  // EXIBIÇÃO DA LISTA E QUANTIDADE
   console.log('\n======================================');
   if (arquivosProcessadosNomes.length > 0) {
     console.log(`✅ SUCESSO: ${arquivosProcessadosNomes.length} arquivo(s) processados:`);
