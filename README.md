@@ -4,7 +4,7 @@
 
 A ferramenta remove ruídos do código (comentários, imports, tipos) e unifica tudo em arquivos de texto compactos, respeitando limites de caracteres para evitar estouro de contexto.
 
-A resposta é dividida  em múltiplos arquivos se o limite de 6.000 caracteres for atingido porque sem uma assinatura pro algumas LLMs têm limite de tokens por prompt.
+A resposta é dividida  em múltiplos arquivos se o limite de 6.000 caracteres for atingido porque sem uma assinatura "pro" algumas LLMs têm limite de tokens por prompt.
 
 ---
 
